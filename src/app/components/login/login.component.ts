@@ -312,7 +312,6 @@ export class LoginComponent implements AfterViewInit {
               "Thành công",
               "Bạn đã đăng nhập thành công!"
             );
-            this.router.navigate(["/home"]);
           },
           error: (error) => {
             this.notification.error(
