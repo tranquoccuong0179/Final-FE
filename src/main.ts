@@ -1,5 +1,5 @@
 import { bootstrapApplication } from "@angular/platform-browser";
-import { Component } from "@angular/core";
+import { Component, importProvidersFrom } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 import { provideRouter } from "@angular/router";
 import { provideHttpClient } from "@angular/common/http";
@@ -12,6 +12,13 @@ import { ProductComponent } from "./app/components/product/product.component";
 import { AddProductComponent } from "./app/components/product/add-product.component";
 import { OrderComponent } from "./app/components/order/order.component";
 import { OrderAdminComponent } from "./app/components/order-admin/order-admin.component";
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
+import { registerLocaleData } from '@angular/common';
+import en from '@angular/common/locales/en';
+import { FormsModule } from '@angular/forms';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+
+registerLocaleData(en);
 
 const routes: Routes = [
   { path: "login", component: LoginComponent },
@@ -34,5 +41,5 @@ const routes: Routes = [
 export class App {}
 
 bootstrapApplication(App, {
-  providers: [provideRouter(routes), provideHttpClient()],
+  providers: [provideRouter(routes), provideHttpClient(), provideNzI18n(en_US), importProvidersFrom(FormsModule), provideAnimationsAsync(), provideHttpClient()],
 });

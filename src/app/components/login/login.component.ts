@@ -1,169 +1,277 @@
-import { Component } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
+
+import { NzFormModule } from "ng-zorro-antd/form";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzCardModule } from "ng-zorro-antd/card";
+import { NzDividerModule } from "ng-zorro-antd/divider";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzTypographyModule } from "ng-zorro-antd/typography";
+import { NzAlertModule } from "ng-zorro-antd/alert";
 import { AuthService } from "../../services/auth.service";
+import * as THREE from "three";
 
 @Component({
   selector: "app-login",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzCardModule,
+    NzDividerModule,
+    NzIconModule,
+    NzTypographyModule,
+    NzAlertModule,
+  ],
   template: `
+    <canvas #background></canvas>
     <div class="auth-container">
-      <div class="login-header">
-        <h2>Đăng Nhập</h2>
-        <p>Chào mừng bạn quay lại!</p>
-      </div>
-      <form (ngSubmit)="onSubmit()" class="login-form">
-        <div class="form-group">
-          <label for="username">Tên đăng nhập</label>
-          <div class="input-group">
-            <i class="icon-user"></i>
-            <input
-              type="text"
-              id="username"
-              [(ngModel)]="username"
-              name="username"
-              placeholder="Nhập tên đăng nhập"
-              required
-            />
+      <div class="stars"></div>
+      <!-- Hiệu ứng galaxy -->
+      <nz-card [nzBorderless]="true" class="login-card">
+        <div class="login-header">
+          <h2 nz-typography nzType="secondary">Đăng Nhập</h2>
+          <p nz-typography nzType="secondary">Chào mừng bạn quay lại!</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="login-form">
+          <div class="form-group">
+            <label for="username" nz-typography>Tên đăng nhập</label>
+            <nz-input-group [nzPrefix]="userIcon">
+              <input
+                type="text"
+                nz-input
+                id="username"
+                [(ngModel)]="username"
+                name="username"
+                placeholder="Nhập tên đăng nhập"
+                required
+              />
+            </nz-input-group>
           </div>
-        </div>
-        <div class="form-group">
-          <label for="password">Mật khẩu</label>
-          <div class="input-group">
-            <i class="icon-lock"></i>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              [(ngModel)]="password"
-              name="password"
-              placeholder="Nhập mật khẩu"
-              required
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              (click)="togglePassword()"
-            >
-              {{ showPassword ? "Ẩn" : "Hiển thị" }}
-            </button>
+
+          <div class="form-group">
+            <label for="password" nz-typography>Mật khẩu</label>
+            <nz-input-group [nzPrefix]="lockIcon" [nzSuffix]="suffixTemplate">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                nz-input
+                id="password"
+                [(ngModel)]="password"
+                name="password"
+                placeholder="Nhập mật khẩu"
+                required
+              />
+            </nz-input-group>
           </div>
-        </div>
-        <div class="error-message" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </div>
-        <button type="submit" class="submit-btn">Đăng Nhập</button>
-      </form>
-      <p class="auth-link">
-        Chưa có tài khoản? <a routerLink="/register">Đăng ký</a>
-      </p>
+
+          <nz-alert
+            *ngIf="errorMessage"
+            nzType="error"
+            [nzMessage]="errorMessage"
+            class="mb-4"
+          ></nz-alert>
+
+          <button
+            nz-button
+            nzType="primary"
+            nzBlock
+            [nzLoading]="isLoading"
+            type="submit"
+          >
+            Đăng Nhập
+          </button>
+        </form>
+
+        <nz-divider nzText="HOẶC"></nz-divider>
+
+        <p class="auth-link">
+          Chưa có tài khoản?
+          <a
+            routerLink="/register"
+            nz-typography
+            nzType="secondary"
+            class="link-text"
+          >
+            Đăng ký
+          </a>
+        </p>
+      </nz-card>
     </div>
+
+    <ng-template #userIcon>
+      <span nz-icon nzType="user" nzTheme="outline"></span>
+    </ng-template>
+
+    <ng-template #lockIcon>
+      <span nz-icon nzType="lock" nzTheme="outline"></span>
+    </ng-template>
+
+    <ng-template #suffixTemplate>
+      <span
+        nz-icon
+        [nzType]="showPassword ? 'eye' : 'eye-invisible'"
+        nzTheme="outline"
+        class="cursor-pointer"
+        (click)="togglePassword()"
+      ></span>
+    </ng-template>
   `,
   styles: [
     `
-      .auth-container {
-        max-width: 400px;
-        margin: 50px auto;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        background: white;
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
       }
+      .auth-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        width: 350px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+      }
+
       .login-header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 24px;
       }
+
       .login-header h2 {
+        margin-bottom: 8px;
         color: #2c3e50;
-        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: 600;
       }
+
       .login-header p {
         color: #7f8c8d;
         margin: 0;
       }
+
       .login-form {
         display: flex;
         flex-direction: column;
         gap: 20px;
       }
+
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 8px;
       }
-      .input-group {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        overflow: hidden;
-        transition: border-color 0.3s;
-      }
-      .input-group:focus-within {
-        border-color: #3498db;
-      }
-      .icon-user,
-      .icon-lock {
-        padding: 12px;
-        background: #f5f5f5;
-        color: #7f8c8d;
-      }
-      .toggle-password {
-        background: none;
-        border: none;
-        padding: 12px;
+
+      .cursor-pointer {
         cursor: pointer;
-        font-size: 14px;
-        color: #3498db;
       }
-      input {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        font-size: 14px;
-        outline: none;
+
+      .mb-4 {
+        margin-bottom: 16px;
       }
-      .submit-btn {
-        background-color: #3498db;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s;
-      }
-      .submit-btn:hover {
-        background-color: #2980b9;
-      }
+
       .auth-link {
         text-align: center;
-        margin-top: 20px;
+        margin-top: 16px;
         color: #7f8c8d;
       }
-      .auth-link a {
+
+      .link-text {
         color: #3498db;
-        text-decoration: none;
       }
-      .auth-link a:hover {
+
+      .link-text:hover {
         text-decoration: underline;
       }
-      .error-message {
-        color: red;
-        font-size: 14px;
-        text-align: center;
+
+      ::ng-deep .ant-input-affix-wrapper {
+        padding: 8px 11px;
+      }
+
+      ::ng-deep .ant-input {
+        padding: 8px 11px;
+        height: auto;
+      }
+
+      ::ng-deep .ant-btn {
+        height: 42px;
+        font-size: 16px;
+      }
+
+      ::ng-deep .ant-card-body {
+        padding: 32px;
       }
     `,
   ],
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
+  @ViewChild("background") backgroundRef!: ElementRef;
   username = "";
   password = "";
   showPassword = false;
   errorMessage = "";
+  isLoading = false;
 
   constructor(private authService: AuthService, private router: Router) {}
+  ngAfterViewInit(): void {
+    this.initThreeJS();
+  }
+  initThreeJS() {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({
+      canvas: this.backgroundRef.nativeElement,
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 2000; i++) {
+      vertices.push((Math.random() * 2 - 1) * 500);
+      vertices.push((Math.random() * 2 - 1) * 500);
+      vertices.push((Math.random() * 2 - 1) * 500);
+    }
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices, 3)
+    );
+
+    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 2 });
+    const stars = new THREE.Points(geometry, material);
+    scene.add(stars);
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      stars.rotation.x += 0.001;
+      stars.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
@@ -171,6 +279,9 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.username && this.password) {
+      this.isLoading = true;
+      this.errorMessage = "";
+
       this.authService
         .login({
           username: this.username,
@@ -178,11 +289,15 @@ export class LoginComponent {
         })
         .subscribe({
           next: () => {
-            // this.router.navigate(["/home"]);
+            this.router.navigate(["/home"]);
           },
           error: (error) => {
             console.error("Login failed:", error);
             this.errorMessage = "Tên đăng nhập hoặc mật khẩu không chính xác.";
+            this.isLoading = false;
+          },
+          complete: () => {
+            this.isLoading = false;
           },
         });
     }
