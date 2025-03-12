@@ -1,3 +1,4 @@
+import { color } from "./../../../../node_modules/@types/three/src/Three.TSL.d";
 import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -43,7 +44,9 @@ import * as THREE from "three";
 
         <form (ngSubmit)="onSubmit()" class="login-form">
           <div class="form-group">
-            <label for="username" nz-typography>Tên đăng nhập</label>
+            <label class="username" for="username" nz-typography
+              >Tên đăng nhập</label
+            >
             <nz-input-group [nzPrefix]="userIcon">
               <input
                 type="text"
@@ -58,7 +61,9 @@ import * as THREE from "three";
           </div>
 
           <div class="form-group">
-            <label for="password" nz-typography>Mật khẩu</label>
+            <label class="password" for="password" nz-typography
+              >Mật khẩu</label
+            >
             <nz-input-group [nzPrefix]="lockIcon" [nzSuffix]="suffixTemplate">
               <input
                 [type]="showPassword ? 'text' : 'password'"
@@ -148,6 +153,15 @@ import * as THREE from "three";
         max-width: 400px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         border-radius: 8px;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .username {
+        color: #ffffff;
+      }
+
+      .password {
+        color: #ffffff;
       }
 
       .login-header {
@@ -157,7 +171,7 @@ import * as THREE from "three";
 
       .login-header h2 {
         margin-bottom: 8px;
-        color: #2c3e50;
+        color: rgb(91, 173, 255);
         font-size: 24px;
         font-weight: 600;
       }
@@ -176,7 +190,7 @@ import * as THREE from "three";
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 8px;   
       }
 
       .cursor-pointer {
