@@ -12,6 +12,7 @@ import { NzDividerModule } from "ng-zorro-antd/divider";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzTypographyModule } from "ng-zorro-antd/typography";
 import { NzAlertModule } from "ng-zorro-antd/alert";
+import { NzNotificationService } from "ng-zorro-antd/notification";
 import { AuthService } from "../../services/auth.service";
 import * as THREE from "three";
 
@@ -190,7 +191,7 @@ import * as THREE from "three";
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;   
+        gap: 8px;
       }
 
       .cursor-pointer {
@@ -243,7 +244,11 @@ export class LoginComponent implements AfterViewInit {
   errorMessage = "";
   isLoading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private notification: NzNotificationService
+  ) {}
   ngAfterViewInit(): void {
     this.initThreeJS();
   }
@@ -303,9 +308,17 @@ export class LoginComponent implements AfterViewInit {
         })
         .subscribe({
           next: () => {
+            this.notification.success(
+              "Thành công",
+              "Bạn đã đăng nhập thành công!"
+            );
             this.router.navigate(["/home"]);
           },
           error: (error) => {
+            this.notification.error(
+              "Lỗi đăng nhập",
+              "Tên đăng nhập hoặc mật khẩu không chính xác."
+            );
             console.error("Login failed:", error);
             this.errorMessage = "Tên đăng nhập hoặc mật khẩu không chính xác.";
             this.isLoading = false;
