@@ -1,156 +1,275 @@
-import { Component } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
+
+import { NzFormModule } from "ng-zorro-antd/form";
+import { NzInputModule } from "ng-zorro-antd/input";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzCardModule } from "ng-zorro-antd/card";
+import { NzDividerModule } from "ng-zorro-antd/divider";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzTypographyModule } from "ng-zorro-antd/typography";
+import { NzAlertModule } from "ng-zorro-antd/alert";
+import { NzNotificationService } from "ng-zorro-antd/notification";
+import * as THREE from "three";
+
 import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: "app-register",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzCardModule,
+    NzDividerModule,
+    NzIconModule,
+    NzTypographyModule,
+    NzAlertModule,
+  ],
   template: `
+    <canvas #background></canvas>
     <div class="auth-container">
-      <h2>Đăng ký tài khoản</h2>
-      <form (ngSubmit)="onSubmit()" class="registration-form">
-        <!-- Tên -->
-        <div class="form-group">
-          <label for="firstName">First name:</label>
-          <input
-            type="text"
-            id="firstName"
-            [(ngModel)]="formData.firstName"
-            name="firstName"
-            placeholder="Enter your first name"
-            required
-          />
+      <nz-card [nzBorderless]="true" class="register-card">
+        <div class="register-header">
+          <h2 nz-typography nzType="secondary">Đăng Ký</h2>
+          <p nz-typography nzType="secondary">Tạo tài khoản mới!</p>
         </div>
 
-        <div class="form-group">
-          <label for="lastName">Last name:</label>
-          <input
-            type="text"
-            id="lastName"
-            [(ngModel)]="formData.lastName"
-            name="lastName"
-            placeholder="Enter your last name"
-            required
-          />
-        </div>
+        <form (ngSubmit)="onSubmit()" class="register-form">
+          <div class="form-group">
+            <label for="firstName" nz-typography>First Name</label>
+            <nz-input-group>
+              <input
+                type="text"
+                nz-input
+                id="firstName"
+                [(ngModel)]="formData.firstName"
+                name="firstName"
+                placeholder="Nhập First Name"
+                required
+              />
+            </nz-input-group>
+          </div>
 
-        <div class="form-group">
-          <label for="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            [(ngModel)]="formData.username"
-            name="username"
-            placeholder="Enter your username"
-            required
-          />
-        </div>
+          <div class="form-group">
+            <label for="lastName" nz-typography>Last Name</label>
+            <nz-input-group>
+              <input
+                type="text"
+                nz-input
+                id="lastName"
+                [(ngModel)]="formData.lastName"
+                name="lastName"
+                placeholder="Nhập Last Name"
+                required
+              />
+            </nz-input-group>
+          </div>
 
-        <div class="form-group">
-          <label for="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            [(ngModel)]="formData.email"
-            name="email"
-            placeholder="Enter your email"
-            required
-          />
-        </div>
+          <div class="form-group">
+            <label for="username" nz-typography>Username</label>
+            <nz-input-group [nzPrefix]="userIcon">
+              <input
+                type="text"
+                nz-input
+                id="username"
+                [(ngModel)]="formData.username"
+                name="username"
+                placeholder="Nhập Username"
+                required
+              />
+            </nz-input-group>
+          </div>
 
-        <div class="form-group">
-          <label for="password">Mật khẩu:</label>
-          <input
-            type="password"
-            id="password"
-            [(ngModel)]="formData.password"
-            name="password"
-            placeholder="Enter your password"
-            required
-          />
-        </div>
+          <div class="form-group">
+            <label for="email" nz-typography>Email</label>
+            <nz-input-group [nzPrefix]="emailIcon">
+              <input
+                type="email"
+                nz-input
+                id="email"
+                [(ngModel)]="formData.email"
+                name="email"
+                placeholder="Nhập Email"
+                required
+              />
+            </nz-input-group>
+          </div>
 
-        <button type="submit" class="submit-btn">Đăng ký</button>
-      </form>
+          <div class="form-group">
+            <label for="password" nz-typography>Password</label>
+            <nz-input-group [nzPrefix]="lockIcon" [nzSuffix]="suffixTemplate">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                nz-input
+                id="password"
+                [(ngModel)]="formData.password"
+                name="password"
+                placeholder="Nhập Password"
+                required
+              />
+            </nz-input-group>
+          </div>
 
-      <!-- Liên kết chuyển đến trang đăng nhập -->
-      <p class="auth-link">
-        Đã có tài khoản? <a routerLink="/login">Đăng nhập</a>
-      </p>
+          <nz-alert
+            *ngIf="errorMessage"
+            nzType="error"
+            [nzMessage]="errorMessage"
+            class="mb-4"
+          ></nz-alert>
+
+          <button
+            nz-button
+            nzType="primary"
+            nzBlock
+            [nzLoading]="isLoading"
+            type="submit"
+          >
+            Đăng Ký
+          </button>
+        </form>
+
+        <nz-divider nzText="HOẶC"></nz-divider>
+
+        <p class="auth-link">
+          Đã có tài khoản?
+          <a
+            routerLink="/login"
+            nz-typography
+            nzType="secondary"
+            class="link-text"
+          >
+            Đăng nhập
+          </a>
+        </p>
+      </nz-card>
     </div>
+
+    <ng-template #userIcon>
+      <span nz-icon nzType="user" nzTheme="outline"></span>
+    </ng-template>
+
+    <ng-template #emailIcon>
+      <span nz-icon nzType="mail" nzTheme="outline"></span>
+    </ng-template>
+
+    <ng-template #lockIcon>
+      <span nz-icon nzType="lock" nzTheme="outline"></span>
+    </ng-template>
+
+    <ng-template #suffixTemplate>
+      <span
+        nz-icon
+        [nzType]="showPassword ? 'eye' : 'eye-invisible'"
+        nzTheme="outline"
+        class="cursor-pointer"
+        (click)="togglePassword()"
+      ></span>
+    </ng-template>
   `,
   styles: [
     `
       .auth-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
-        background: #ffffff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        width: 350px;
       }
-      h2 {
+
+      .register-card {
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .register-header {
         text-align: center;
-        color: #333;
-        margin-bottom: 25px;
+        margin-bottom: 24px;
       }
-      .registration-form {
+
+      .register-header h2 {
+        margin-bottom: 8px;
+        color: rgb(91, 173, 255);
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .register-header p {
+        color: #7f8c8d;
+        margin: 0;
+      }
+
+      .register-form {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
       }
+
       .form-group {
         display: flex;
         flex-direction: column;
+        gap: 8px;
       }
+
       label {
-        margin-bottom: 8px;
+        color: #333;
         font-weight: 500;
-        color: #555;
       }
-      input {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 14px;
-        transition: border-color 0.3s;
-      }
-      input:focus {
-        border-color: #3498db;
-        outline: none;
-      }
-      .submit-btn {
-        background-color: #3498db;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 5px;
+
+      .cursor-pointer {
         cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s;
       }
-      .submit-btn:hover {
-        background-color: #2980b9;
+
+      .mb-4 {
+        margin-bottom: 16px;
       }
+
       .auth-link {
         text-align: center;
-        margin-top: 20px;
+        margin-top: 16px;
         color: #7f8c8d;
       }
-      .auth-link a {
+
+      .link-text {
         color: #3498db;
-        text-decoration: none;
       }
-      .auth-link a:hover {
+
+      .link-text:hover {
         text-decoration: underline;
+      }
+
+      ::ng-deep .ant-input-affix-wrapper {
+        padding: 8px 11px;
+      }
+
+      ::ng-deep .ant-input {
+        padding: 8px 11px;
+        height: auto;
+      }
+
+      ::ng-deep .ant-btn {
+        height: 42px;
+        font-size: 16px;
+      }
+
+      ::ng-deep .ant-card-body {
+        padding: 32px;
       }
     `,
   ],
 })
-export class RegisterComponent {
+export class RegisterComponent implements AfterViewInit {
+  @ViewChild("background") backgroundRef!: ElementRef;
   formData = {
     username: "",
     password: "",
@@ -159,19 +278,87 @@ export class RegisterComponent {
     lastName: "",
   };
 
-  constructor(private authService: AuthService, private router: Router) {}
+  showPassword = false;
+  errorMessage = "";
+  isLoading = false;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private notification: NzNotificationService
+  ) {}
+
+  ngAfterViewInit(): void {
+    this.initThreeJS();
+  }
+  initThreeJS() {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    const renderer = new THREE.WebGLRenderer({
+      canvas: this.backgroundRef.nativeElement,
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 2000; i++) {
+      vertices.push((Math.random() * 2 - 1) * 500);
+      vertices.push((Math.random() * 2 - 1) * 500);
+      vertices.push((Math.random() * 2 - 1) * 500);
+    }
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices, 3)
+    );
+
+    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 2 });
+    const stars = new THREE.Points(geometry, material);
+    scene.add(stars);
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      stars.rotation.x += 0.001;
+      stars.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
 
   onSubmit() {
     if (this.isFormValid()) {
-      const formDataWithDate = { ...this.formData };
-      this.authService.register(formDataWithDate).subscribe({
+      this.isLoading = true;
+      this.errorMessage = "";
+
+      this.authService.register(this.formData).subscribe({
         next: () => {
+          this.notification.success(
+            "Thành công",
+            "Bạn đã đăng ký thành công! Vui lòng đăng nhập."
+          );
           this.router.navigate(["/login"]);
-          alert("Đăng ký thành công! Vui lòng đăng nhập.");
         },
         error: (error) => {
           console.error("Đăng ký thất bại:", error);
-          alert("Đăng ký thất bại. Vui lòng thử lại.");
+          this.notification.error(
+            "Lỗi đăng ký",
+            "Đăng ký thất bại. Vui lòng thử lại."
+          );
+          this.errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
+          this.isLoading = false;
+        },
+        complete: () => {
+          this.isLoading = false;
         },
       });
     }

@@ -10,7 +10,6 @@ import {
   CreateOrderResponse,
 } from "../../models/order.model";
 import { OrderService } from "../../services/order.service";
-import { HttpHeaders } from "@angular/common/http";
 @Component({
   selector: "app-product",
   standalone: true,
