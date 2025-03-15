@@ -28,7 +28,7 @@ import { AuthService } from "../../services/auth.service";
         <div class="header-right">
           <button class="home-btn" (click)="navigateTo('home')">Home</button>
           <button class="home-btn" (click)="navigateTo('product')">
-            Products
+            Sản phẩm
           </button>
         </div>
       </header>

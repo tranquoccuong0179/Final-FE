@@ -34,7 +34,7 @@ import { switchMap, catchError, tap } from "rxjs/operators";
         <div class="header-right">
           <button class="nav-btn" (click)="navigateTo('home')">Home</button>
           <button class="nav-btn" (click)="navigateTo('product')">
-            Products
+            Sản phẩm
           </button>
         </div>
       </header>
