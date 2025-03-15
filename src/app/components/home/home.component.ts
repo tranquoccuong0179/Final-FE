@@ -521,6 +521,7 @@ const icons: IconDefinition[] = [
   ],
 })
 export class HomeComponent implements OnInit {
+  isAdmin = false;
   profile?: User | null = {
     firstName: "",
     lastName: "",
@@ -533,6 +534,7 @@ export class HomeComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit() {
+    this.checkAdminRole();
     this.authService.loadProfileFromAPI();
     this.authService.getProfile().subscribe({
       next: (profile) => {
@@ -544,6 +546,10 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  checkAdminRole(): void {
+    this.isAdmin = localStorage.getItem("role") === "admin";
+  }
+
   logout() {
     this.authService.logout();
   }
@@ -553,7 +559,7 @@ export class HomeComponent implements OnInit {
   }
 
   goToOrder() {
-    this.router.navigate(["/order"]);
+    this.router.navigate([this.isAdmin ? "/order/admin" : "/order"]);
   }
 
   getInitials(user: User | null | undefined): string {
