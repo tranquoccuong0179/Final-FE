@@ -7,7 +7,6 @@ import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzTableModule } from "ng-zorro-antd/table";
 import { NzTagModule } from "ng-zorro-antd/tag";
 import { AuthService } from "../../services/auth.service";
-import { User } from "../../models/auth.model";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { Observable, Subscription, forkJoin, of } from "rxjs";
 import { switchMap, catchError, tap } from "rxjs/operators";

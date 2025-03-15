@@ -26,8 +26,15 @@ import { NzIconModule } from "ng-zorro-antd/icon";
     NzIconModule,
   ],
   template: `
-    <div class="container">
+    <div class="header">
+      <button class="back-button" (click)="navigateTo('product')">
+        <i nz-icon nzType="arrow-left" nzTheme="outline"></i>
+        Back to Products
+      </button>
       <h2 class="form-title">Thêm sản phẩm</h2>
+    </div>
+
+    <div class="container">
       <form nz-form [formGroup]="productForm" (ngSubmit)="onSubmit()">
         <nz-form-item>
           <nz-form-label nzFor="name" nzRequired>Tên sản phẩm</nz-form-label>
@@ -92,6 +99,39 @@ import { NzIconModule } from "ng-zorro-antd/icon";
   `,
   styles: [
     `
+      .header {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .back-button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .back-button:hover {
+        text-decoration: underline;
+      }
+
+      .form-title {
+        font-size: 28px;
+        color: #333;
+        text-align: center;
+        flex-grow: 1;
+      }
+
       .container {
         width: 500px;
         margin: auto;
@@ -99,13 +139,6 @@ import { NzIconModule } from "ng-zorro-antd/icon";
         background: white;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         border-radius: 15px;
-      }
-
-      .form-title {
-        font-size: 28px;
-        margin-bottom: 30px;
-        color: #333;
-        text-align: center;
       }
 
       label {
@@ -242,5 +275,9 @@ export class AddProductComponent {
 
   cancel() {
     this.router.navigate(["/product"]);
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([`/${route}`]);
   }
 }
