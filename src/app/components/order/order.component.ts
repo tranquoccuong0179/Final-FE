@@ -3,13 +3,13 @@ import { OrderService } from "./../../services/order.service";
 import { Component, OnInit } from "@angular/core";
 import { CurrencyPipe } from "../../pipe/currency.pipe";
 import { Router } from "@angular/router";
-import { NzTagModule } from "ng-zorro-antd/tag"; // Import NzTagModule
+import { NzTagModule } from "ng-zorro-antd/tag";
 import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: "app-order",
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, NzTagModule], // Add NzTagModule to imports
+  imports: [CommonModule, CurrencyPipe, NzTagModule],
   template: `
     <div class="container">
       <header class="header">
