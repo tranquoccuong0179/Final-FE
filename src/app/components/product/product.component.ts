@@ -80,13 +80,32 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
             [nzCover]="coverTemplate"
           >
             <ng-template #coverTemplate>
-              <img [src]="product.imageUrl" alt="{{ product.name }}" />
+              <img
+                [src]="
+                  'https://drive.google.com/thumbnail?id=' +
+                  getImageId(product.image)
+                "
+                alt="{{ product.name }}"
+                (error)="onImageError($event, product)"
+              />
             </ng-template>
 
             <nz-card-meta
               [nzTitle]="product.name"
               [nzDescription]="product.description"
             ></nz-card-meta>
+
+            <div class="product-quantity">
+              Số lượng:
+              <span class="quantity-value">
+                {{ product.quantity }}
+                <span *ngIf="product.quantity > 0; else hetHang">
+                  (Còn hàng)
+                </span>
+                <ng-template #hetHang>(Hết hàng)</ng-template>
+              </span>
+            </div>
+
             <div class="price">
               {{ product.price | currency : "VND" }}
             </div>
@@ -151,34 +170,87 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
         <ng-template #noProducts>
           <p class="no-products">Không có sản phẩm nào.</p>
         </ng-template>
+
+        <div *ngIf="showOrderButton" class="place-order-container">
+          <button
+            nz-button
+            nzType="primary"
+            (click)="placeOrder()"
+            class="place-order-button"
+          >
+            <i nz-icon nzType="shopping-cart" nzTheme="outline"></i>
+            Đặt hàng
+          </button>
+        </div>
       </main>
 
-      <footer *ngIf="showOrderButton" class="footer">
-        <button nz-button nzType="primary" (click)="placeOrder()">
-          Đặt hàng
-        </button>
-      </footer>
-
-      <!-- Product View Modal -->
+      <!-- Product View Modal - Enhanced -->
       <nz-modal
         [(nzVisible)]="isViewModalVisible"
         [nzTitle]="selectedProduct?.name"
         (nzOnCancel)="handleCancel()"
         (nzOnOk)="handleCancel()"
+        [nzFooter]="null"
+        nzWidth="700px"
+        nzClassName="product-view-modal"
       >
         <ng-container *nzModalContent>
-          <img
-            *ngIf="selectedProduct"
-            [src]="selectedProduct?.imageUrl"
-            alt="{{ selectedProduct?.name }}"
-            style="width: 100%; margin-bottom: 10px;"
-          />
-          <p *ngIf="selectedProduct">
-            Giá: {{ selectedProduct?.price | currency : "VND" }}
-          </p>
-          <p *ngIf="selectedProduct">
-            Mô tả: {{ selectedProduct?.description }}
-          </p>
+          <div class="product-view-container">
+            <div class="product-view-image-container">
+              <img
+                *ngIf="selectedProduct"
+                [src]="
+                  'https://drive.google.com/thumbnail?id=' +
+                  getImageId(selectedProduct?.image)
+                "
+                alt="{{ selectedProduct?.name }}"
+                class="product-view-image"
+                (error)="onImageError($event, selectedProduct)"
+              />
+            </div>
+
+            <div class="product-view-details">
+              <h2 class="product-view-name">{{ selectedProduct?.name }}</h2>
+
+              <div class="product-info-row">
+                <span class="product-info-label">Giá:</span>
+                <span class="product-view-price">
+                  {{ selectedProduct?.price | currency : "VND" }}
+                </span>
+              </div>
+
+              <div class="product-info-row">
+                <span class="product-info-label">Số lượng:</span>
+                <span class="product-view-quantity">
+                  {{ selectedProduct?.quantity }}
+                  <span *ngIf="selectedProduct.quantity > 0; else hetHang">
+                    (Còn hàng)
+                  </span>
+                  <ng-template #hetHang class="het-hang-text"
+                    >(Hết hàng)</ng-template
+                  >
+                </span>
+              </div>
+
+              <div class="product-info-row">
+                <span class="product-info-label">Mô tả:</span>
+                <div class="product-view-description">
+                  {{ selectedProduct?.description }}
+                </div>
+              </div>
+
+              <div class="product-view-actions">
+                <button
+                  nz-button
+                  nzType="default"
+                  (click)="handleCancel()"
+                  class="close-button"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
         </ng-container>
       </nz-modal>
 
@@ -190,65 +262,107 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
         (nzOnOk)="saveChanges()"
         [nzOkText]="isAdmin ? 'Cập nhật' : 'OK'"
         [nzCancelText]="'Hủy'"
+        nzClassName="bordered-modal"
       >
         <ng-container *nzModalContent>
-          <ng-container *ngIf="isAdmin; else viewMode">
-            <div class="form-group">
-              <label for="name">Tên sản phẩm:</label>
-              <input
-                nz-input
-                id="name"
-                type="text"
-                [(ngModel)]="selectedProduct!.name"
+          <div class="edit-modal-content">
+            <ng-container *ngIf="isAdmin; else viewMode">
+              <div class="form-group">
+                <label for="name">Tên sản phẩm:</label>
+                <input
+                  nz-input
+                  id="name"
+                  type="text"
+                  [(ngModel)]="selectedProduct!.name"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="imageUrl">Hình ảnh URL:</label>
+                <input
+                  nz-input
+                  id="imageUrl"
+                  type="text"
+                  [(ngModel)]="selectedProduct!.image"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Hình ảnh:</label>
+                <img
+                  *ngIf="selectedProduct"
+                  [src]="
+                    'https://drive.google.com/thumbnail?id=' +
+                    getImageId(selectedProduct!.image)
+                  "
+                  alt="{{ selectedProduct!.name }}"
+                  style="width: 100%; margin-bottom: 10px;"
+                  (error)="onImageError($event, selectedProduct)"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="price">Giá:</label>
+                <input
+                  nz-input
+                  id="price"
+                  type="number"
+                  [(ngModel)]="selectedProduct!.price"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="quantity">Số lượng:</label>
+                <input
+                  nz-input
+                  id="quantity"
+                  type="number"
+                  [(ngModel)]="selectedProduct!.quantity"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="description">Mô tả:</label>
+                <textarea
+                  nz-input
+                  id="description"
+                  [(ngModel)]="selectedProduct!.description"
+                  rows="4"
+                ></textarea>
+              </div>
+            </ng-container>
+
+            <ng-template #viewMode>
+              <h2 *ngIf="selectedProduct">{{ selectedProduct.name }}</h2>
+              <img
+                *ngIf="selectedProduct"
+                [src]="
+                  'https://drive.google.com/thumbnail?id=' +
+                  getImageId(selectedProduct.image)
+                "
+                alt="{{ selectedProduct.name }}"
+                style="width: 100%; margin-bottom: 10px;"
+                (error)="onImageError($event, selectedProduct)"
               />
-            </div>
+              <p *ngIf="selectedProduct">
+                Giá: {{ selectedProduct.price | currency : "VND" }}
+              </p>
+              <p *ngIf="selectedProduct">
+                Mô tả: {{ selectedProduct.description }}
+              </p>
 
-            <div class="form-group">
-              <label for="imageUrl">Hình ảnh URL:</label>
-              <input
-                nz-input
-                id="imageUrl"
-                type="text"
-                [(ngModel)]="selectedProduct!.imageUrl"
-              />
-            </div>
+              <p *ngIf="selectedProduct">
+                Số lượng: {{ selectedProduct.quantity }}
+              </p>
 
-            <div class="form-group">
-              <label for="price">Giá:</label>
-              <input
-                nz-input
-                id="price"
-                type="number"
-                [(ngModel)]="selectedProduct!.price"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="description">Mô tả:</label>
-              <textarea
-                nz-input
-                id="description"
-                [(ngModel)]="selectedProduct!.description"
-                rows="4"
-              ></textarea>
-            </div>
-          </ng-container>
-
-          <ng-template #viewMode>
-            <h2 *ngIf="selectedProduct">{{ selectedProduct.name }}</h2>
-            <img
-              *ngIf="selectedProduct"
-              [src]="selectedProduct.imageUrl"
-              alt="{{ selectedProduct.name }}"
-              style="width: 100%; margin-bottom: 10px;"
-            />
-            <p *ngIf="selectedProduct">
-              Giá: {{ selectedProduct.price | currency : "VND" }}
-            </p>
-            <p *ngIf="selectedProduct">
-              Mô tả: {{ selectedProduct.description }}
-            </p>
-          </ng-template>
+              <p *ngIf="selectedProduct">
+                <span *ngIf="selectedProduct.quantity > 0; else hetHang">
+                  Còn hàng
+                </span>
+                <ng-template #hetHang>Hết hàng</ng-template>
+              </p>
+            </ng-template>
+          </div>
         </ng-container>
       </nz-modal>
     </div>
@@ -397,13 +511,14 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-start;
       }
 
       .product-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
-        width: 100%;
+        width: 100%; /* Fixed width */
         max-width: 1400px; /* Increased width */
       }
 
@@ -479,6 +594,188 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
       .product-actions button:hover {
         color: #185a9d;
       }
+
+      .product-quantity {
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #777;
+        font-style: italic; /* Make it italic like description */
+      }
+
+      .quantity-value {
+        font-style: normal;
+        color: #333; /* Make the number stand out */
+        font-weight: bold;
+      }
+
+      /* Enhanced Product View Modal Styles */
+      .product-view-modal .ant-modal-content {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border: none;
+      }
+
+      .product-view-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+      }
+
+      .product-view-image-container {
+        width: 40%;
+        background-color: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .product-view-image {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .product-view-details {
+        width: 60%;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .product-view-name {
+        font-size: 26px;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 16px;
+        text-align: left;
+      }
+
+      .product-info-row {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 12px;
+      }
+
+      .product-info-label {
+        font-weight: 500;
+        color: #718096;
+        width: 90px;
+        text-align: left;
+        flex-shrink: 0;
+        font-size: 15px;
+      }
+
+      .product-view-price {
+        font-size: 20px;
+        color: #3182ce;
+        font-weight: 600;
+      }
+
+      .product-view-quantity {
+        font-size: 15px;
+        color: #4a5568;
+      }
+
+      .product-view-description {
+        font-size: 15px;
+        color: #4a5568;
+        line-height: 1.5;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        text-align: justify;
+        margin-top: 8px;
+      }
+
+      .product-view-actions {
+        margin-top: auto;
+        text-align: right;
+      }
+
+      .close-button {
+        background-color: #edf2f7;
+        border: 1px solid #e2e8f0;
+        color: #4a5568;
+        padding: 10px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        font-size: 16px;
+        display: inline-block;
+        width: auto;
+        height: auto;
+        line-height: normal;
+      }
+
+      .close-button:hover {
+        background-color: #e2e8f0;
+        border-color: #cbd5e0;
+      }
+
+      /* Styles for Edit Modal */
+      .edit-modal-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .edit-modal-content .form-group {
+        margin-bottom: 12px;
+      }
+
+      .edit-modal-content label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+      }
+
+      .edit-modal-content input[nz-input],
+      .edit-modal-content textarea[nz-input] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      /* Bordered Modal Style */
+      .bordered-modal .ant-modal-content {
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+      }
+
+      /* Enhanced Place Order Button */
+      .place-order-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+        width: 100%;
+      }
+
+      .place-order-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 14px 32px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+      }
+
+      .place-order-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
     `,
   ],
 })
@@ -494,6 +791,8 @@ export class ProductComponent implements OnInit {
   isLoading: boolean = true; // Add loading state
   firstName: string = "";
   lastName: string = "";
+
+  private errorHandled: { [key: string]: boolean } = {}; // Track errors
 
   constructor(
     private productService: ProductService,
@@ -517,6 +816,7 @@ export class ProductComponent implements OnInit {
   loadProducts(): void {
     this.productService.getProducts().subscribe({
       next: (data) => {
+        console.log(data);
         this.products = data;
         this.products.forEach((product) => {
           this.productQuantities[product.id] = 0;
@@ -625,7 +925,44 @@ export class ProductComponent implements OnInit {
   }
 
   placeOrder(): void {
-    this.router.navigate([this.isAdmin ? "/order/admin" : "/order"]);
+    const orderDetails: CreateOrderDetailRequest[] = [];
+    for (const productId in this.productQuantities) {
+      if (
+        this.productQuantities.hasOwnProperty(productId) &&
+        this.productQuantities[productId] > 0
+      ) {
+        orderDetails.push({
+          product_id: Number(productId),
+          quantity: this.productQuantities[productId],
+        });
+      }
+    }
+
+    const orderData: CreateOrderRequest = { details: orderDetails };
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Bạn chưa đăng nhập. Vui lòng đăng nhập trước khi đặt hàng.");
+      return;
+    }
+
+    this.orderService.createOrder(orderData).subscribe({
+      next: (order) => {
+        console.log("Order created successfully:", order);
+        alert("Đặt hàng thành công!");
+        this.orderData = order;
+
+        Object.keys(this.productQuantities).forEach((productId) => {
+          this.productQuantities[Number(productId)] = 0;
+        });
+        this.updateOrderButtonVisibility();
+        this.router.navigate(["/order"]);
+      },
+      error: (error) => {
+        console.error("Error creating order:", error);
+        alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+      },
+    });
   }
 
   increaseQuantity(product: any): void {
@@ -659,5 +996,53 @@ export class ProductComponent implements OnInit {
       nzTitle: "Thành công",
       nzContent: `Đã thêm sản phẩm ${product.name} vào giỏ hàng!`,
     });
+  }
+
+  getImageId(imageUrl: string): string {
+    try {
+      const url = new URL(imageUrl);
+      const pathname = url.pathname;
+      const parts = pathname.split("/");
+      const idIndex = parts.indexOf("d") + 1; // Find index after 'd'
+      if (idIndex > 0 && idIndex < parts.length) {
+        return parts[idIndex];
+      } else {
+        console.warn("Could not extract ID from Google Drive URL.");
+        return "";
+      }
+    } catch (error) {
+      console.error("Invalid URL:", imageUrl, error);
+      return "";
+    }
+  }
+
+  onImageError(event: any, product: any) {
+    const productId = product.id; // Use a unique key for each product
+
+    if (!this.errorHandled[productId]) {
+      console.log(
+        `Image failed to load for product ${product.name}.  Attempting to load placeholder.`
+      );
+      this.errorHandled[productId] = true; // Mark this product as handled
+
+      event.target.onerror = null; // Prevent infinite loop
+      event.target.src = "assets/placeholder.png"; // Replace with placeholder
+
+      // Log if the placeholder is not loading (for debugging)
+      event.target.onload = () => {
+        console.log(
+          `Placeholder image loaded successfully for product ${product.name}`
+        );
+      };
+      event.target.onerror = () => {
+        console.error(
+          `Placeholder image failed to load for product ${product.name}!`
+        );
+      };
+    } else {
+      console.warn(
+        `Error already handled for product ${product.name}.  Ignoring.`
+      );
+    }
   }
 }

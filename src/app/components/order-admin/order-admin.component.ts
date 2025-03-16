@@ -75,7 +75,7 @@ import { switchMap, catchError, tap } from "rxjs/operators";
                     class="btn-add"
                     nz-button
                     nzType="primary"
-                    *ngIf="data.status === 'PENDING'"
+                    *ngIf="data.status === 'PAID'"
                     (click)="receiveOrder(data)"
                   >
                     Chấp nhận

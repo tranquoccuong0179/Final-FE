@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  image: string;
   quantity: number;
 }
 
@@ -17,4 +18,5 @@ export interface ProductRequest {
   description: string;
   price: number;
   quantity: number;
+  image?: string;
 }

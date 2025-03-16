@@ -7,6 +7,8 @@ import {
   CreateOrderResponse,
   ApiResponse,
   Order,
+  Payment,
+  PaymentRequestDTO,
 } from "../models/order.model";
 
 @Injectable({
@@ -67,5 +69,15 @@ export class OrderService {
     return this.http
       .put<ApiResponse<Order>>(`${this.apiUrl}/${id}/receive`, {})
       .pipe(map((response) => response.data));
+  }
+
+  paymentOrder(request: PaymentRequestDTO): Observable<string> {
+    return this.http
+      .post(
+        `http://localhost:8080/api/v1/payment/create?businessKey=${request.businessKey}`,
+        {},
+        { responseType: "text" }
+      )
+      .pipe(map((response) => response));
   }
 }

@@ -15,9 +15,19 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface Payment {
+  link: string;
+}
+
+export interface PaymentRequestDTO {
+  businessKey: String;
+}
+
 export interface Order {
   totalPrice: number;
   totalProduct: number;
+  status: string;
+  businessKey: string;
 }
 
 export interface CreateOrderResponse {
@@ -31,4 +41,5 @@ export interface CreateOrderDetailResponse {
   quantity: number;
   product: Product;
   price: number;
+  businessKey: string;
 }

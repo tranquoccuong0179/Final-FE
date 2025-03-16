@@ -17,6 +17,8 @@ import { registerLocaleData } from "@angular/common";
 import en from "@angular/common/locales/en";
 import { FormsModule } from "@angular/forms";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
+import { PaymentSuccessComponent } from "./app/components/callback/payment-success.component";
+import { PaymentFailureComponent } from "./app/components/callback/payment-failed.component";
 
 registerLocaleData(en);
 
@@ -30,6 +32,8 @@ const routes: Routes = [
   { path: "product/add", component: AddProductComponent },
   { path: "order", component: OrderComponent },
   { path: "order/admin", component: OrderAdminComponent },
+  { path: "success", component: PaymentSuccessComponent },
+  { path: "failed", component: PaymentFailureComponent },
 ];
 
 @Component({

@@ -5,11 +5,15 @@ import { CurrencyPipe } from "../../pipe/currency.pipe";
 import { Router } from "@angular/router";
 import { NzTagModule } from "ng-zorro-antd/tag";
 import { AuthService } from "../../services/auth.service";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzMessageService } from "ng-zorro-antd/message";
+import { Payment, Order, PaymentRequestDTO } from "../../models/order.model";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   selector: "app-order",
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, NzTagModule],
+  imports: [CommonModule, CurrencyPipe, NzTagModule, NzButtonModule],
   template: `
     <div class="container">
       <header class="header">
@@ -44,6 +48,7 @@ import { AuthService } from "../../services/auth.service";
                 <th>Tổng giá</th>
                 <th>Số lượng sản phẩm</th>
                 <th>Trạng thái</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -54,6 +59,18 @@ import { AuthService } from "../../services/auth.service";
                   <nz-tag [nzColor]="getStatusColor(order.status)">
                     {{ order.status }}
                   </nz-tag>
+                </td>
+                <td>
+                  <!-- "Pay" button, shown only if status is "PENDING" -->
+                  <button
+                    class="btn-add"
+                    nz-button
+                    nzType="primary"
+                    *ngIf="order.status === 'PENDING'"
+                    (click)="payOrder(order)"
+                  >
+                    Thanh toán
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -77,11 +94,7 @@ import { AuthService } from "../../services/auth.service";
       }
 
       .header {
-        background: linear-gradient(
-          135deg,
-          #43cea2,
-          #185a9d
-        ); /* Gradient mạnh mẽ */
+        background: linear-gradient(135deg, #43cea2, #185a9d);
         color: #fff;
         padding: 30px;
         display: flex;
@@ -124,6 +137,21 @@ import { AuthService } from "../../services/auth.service";
       .home-btn:hover {
         background-color: rgba(255, 255, 255, 0.5);
         transform: translateY(-2px);
+      }
+
+      .btn-add {
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        color: white;
+        padding: 12px 22px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .title-wrapper {
@@ -245,7 +273,7 @@ import { AuthService } from "../../services/auth.service";
   ],
 })
 export class OrderComponent implements OnInit {
-  orders: any[] = [];
+  orders: Order[] = [];
   firstName: string = "";
   lastName: string = "";
   isAdmin: boolean = false;
@@ -253,7 +281,8 @@ export class OrderComponent implements OnInit {
   constructor(
     private orderService: OrderService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private message: NzMessageService
   ) {}
 
   ngOnInit(): void {
@@ -266,6 +295,7 @@ export class OrderComponent implements OnInit {
 
     this.orderService.getOrders().subscribe({
       next: (data) => {
+        console.log(data);
         this.orders = data;
       },
       error: (err) => {
@@ -300,5 +330,43 @@ export class OrderComponent implements OnInit {
       return (this.firstName[0] + this.lastName[0]).toUpperCase();
     }
     return "";
+  }
+
+  payOrder(order: Order): void {
+    console.log("Order object:", order);
+    console.log("businessKey:", order?.businessKey); // Check kỹ nếu `order` bị undefined
+
+    // Đảm bảo `businessKey` không bị undefined trước khi gửi request
+    if (!order?.businessKey) {
+      this.message.error("Invalid order data: Missing businessKey");
+      return;
+    }
+
+    const paymentRequest: PaymentRequestDTO = {
+      businessKey: order.businessKey,
+    };
+
+    this.orderService.paymentOrder(paymentRequest).subscribe({
+      next: (paymentUrl: string) => {
+        console.log("Payment URL:", paymentUrl); // Kiểm tra BE trả về gì
+        this.message.success(`Redirecting to payment gateway...`);
+        window.location.href = paymentUrl; // Chuyển hướng đến URL thanh toán
+      },
+      error: (error: any) => {
+        console.error("Payment initiation error:", error);
+
+        let errorMessage = "Failed to initiate payment. Please try again.";
+
+        if (error instanceof HttpErrorResponse) {
+          if (error.error && error.error.message) {
+            errorMessage = error.error.message;
+          } else {
+            errorMessage = `Payment initiation failed. Status code: ${error.status}, Message: ${error.message}`;
+          }
+        }
+
+        this.message.error(errorMessage);
+      },
+    });
   }
 }

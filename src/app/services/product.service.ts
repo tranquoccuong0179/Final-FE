@@ -18,9 +18,15 @@ export class ProductService {
       .pipe(map((response) => response.data));
   }
 
-  addProduct(product: ProductRequest): Observable<Product> {
+  addProduct(product: ProductRequest, file: File): Observable<Product> {
+    const formData = new FormData();
+    formData.append("name", product.name);
+    formData.append("description", product.description);
+    formData.append("price", product.price.toString());
+    formData.append("quantity", product.quantity.toString()); // Thêm quantity
+    formData.append("file", file);
     return this.http
-      .post<ApiResponse<Product>>(this.apiUrl, product)
+      .post<ApiResponse<Product>>(this.apiUrl, formData)
       .pipe(map((response) => response.data));
   }
 

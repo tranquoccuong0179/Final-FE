@@ -1,7 +1,6 @@
 import { Component } from "@angular/core";
 import { Router } from "@angular/router";
 import { ProductService } from "../../services/product.service";
-import { ProductRequest } from "../../models/product.model";
 import {
   FormBuilder,
   FormGroup,
@@ -13,6 +12,7 @@ import { NzInputModule } from "ng-zorro-antd/input";
 import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzFormModule } from "ng-zorro-antd/form";
 import { NzIconModule } from "ng-zorro-antd/icon";
+import { ProductRequest } from "../../models/product.model";
 
 @Component({
   selector: "app-add-product",
@@ -74,11 +74,18 @@ import { NzIconModule } from "ng-zorro-antd/icon";
           </nz-form-control>
         </nz-form-item>
 
+        <nz-form-item>
+          <nz-form-label nzFor="image" nzRequired>Hình ảnh</nz-form-label>
+          <nz-form-control>
+            <input type="file" id="image" (change)="onFileSelected($event)" />
+          </nz-form-control>
+        </nz-form-item>
+
         <div class="button-group">
           <button
             nz-button
             nzType="primary"
-            [disabled]="productForm.invalid"
+            [disabled]="productForm.invalid || !selectedFile"
             class="save-button"
           >
             <i nz-icon nzType="save" nzTheme="outline"></i>
@@ -244,6 +251,7 @@ import { NzIconModule } from "ng-zorro-antd/icon";
 })
 export class AddProductComponent {
   productForm: FormGroup;
+  selectedFile: File | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -258,10 +266,14 @@ export class AddProductComponent {
     });
   }
 
+  onFileSelected(event: any): void {
+    this.selectedFile = (event.target as HTMLInputElement).files?.[0] || null;
+  }
+
   onSubmit() {
-    if (this.productForm.valid) {
+    if (this.productForm.valid && this.selectedFile) {
       const newProduct: ProductRequest = this.productForm.value;
-      this.productService.addProduct(newProduct).subscribe({
+      this.productService.addProduct(newProduct, this.selectedFile).subscribe({
         next: (product) => {
           console.log("Sản phẩm đã thêm:", product);
           this.router.navigate(["/product"]);
