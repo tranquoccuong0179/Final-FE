@@ -58,20 +58,18 @@ export class AuthService {
 
     const headers = { Authorization: `Bearer ${token}` };
 
-    this.http
-      .get<{ data: User }>(`${this.baseUrl}/profile`, { headers })
-      .subscribe({
-        next: (response) => {
-          console.log(response.data.email);
-          this.profileSubject.next(response.data);
-          this.isAuthenticatedSubject.next(true);
-        },
-        error: (err) => {
-          console.error("Lỗi khi tải profile:", err);
-          this.isAuthenticatedSubject.next(false);
-          this.profileSubject.next(null);
-        },
-      });
+    this.http.get<{ data: User }>("/profiles", { headers }).subscribe({
+      next: (response) => {
+        console.log(response.data.email);
+        this.profileSubject.next(response.data);
+        this.isAuthenticatedSubject.next(true);
+      },
+      error: (err) => {
+        console.error("Lỗi khi tải profile:", err);
+        this.isAuthenticatedSubject.next(false);
+        this.profileSubject.next(null);
+      },
+    });
   }
 
   getProfile(): Observable<User | null> {
