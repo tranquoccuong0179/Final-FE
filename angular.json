@@ -38,10 +38,7 @@
             "outputPath": "dist/demo",
             "polyfills": ["zone.js"],
             "scripts": [],
-            "styles": [
-              "src/theme.less",
-              "src/global_styles.css"
-            ],
+            "styles": ["src/theme.less", "src/global_styles.css"],
             "tsConfig": "tsconfig.app.json"
           }
         },
