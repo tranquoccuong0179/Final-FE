@@ -277,7 +277,7 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
                 />
               </div>
 
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label for="imageUrl">Hình ảnh URL:</label>
                 <input
                   nz-input
@@ -285,7 +285,7 @@ const icons: IconDefinition[] = [EditOutline, EyeOutline, ShoppingCartOutline];
                   type="text"
                   [(ngModel)]="selectedProduct!.image"
                 />
-              </div>
+              </div> -->
 
               <div class="form-group">
                 <label>Hình ảnh:</label>

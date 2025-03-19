@@ -15,7 +15,7 @@ import { JwtHelperService } from "@auth0/angular-jwt";
   providedIn: "root",
 })
 export class AuthService {
-  private baseUrl = "http://localhost:8080";
+  private baseUrl = "http://14.225.220.28:8182";
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
