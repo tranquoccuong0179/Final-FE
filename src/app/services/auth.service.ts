@@ -137,10 +137,9 @@ export class AuthService {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    return this.http.get<{ code: number; data: Users[] }>(
-      `${this.baseUrl}/profiles`,
-      { headers }
-    );
+    return this.http.get<{ code: number; data: Users[] }>(`/profiles`, {
+      headers,
+    });
   }
 
   deleteUser(userId: number): Observable<void> {
