@@ -12,6 +12,14 @@
     {
       "source": "/profile",
       "destination": "http://14.225.220.28:8182/profile"
+    },
+    {
+      "source": "/delete",
+      "destination": "http://14.225.220.28:8182/delete/:id"
+    },
+    {
+      "source": "/register",
+      "destination": "http://14.225.220.28:8182/register"
     }
   ]
 }

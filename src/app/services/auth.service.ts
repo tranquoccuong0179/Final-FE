@@ -147,12 +147,12 @@ export class AuthService {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    return this.http.delete<void>(`${this.baseUrl}/delete/${userId}`, {
+    return this.http.delete<void>(`/delete/${userId}`, {
       headers,
     });
   }
   register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, request);
+    return this.http.post<AuthResponse>("/register", request);
   }
 
   logout() {
