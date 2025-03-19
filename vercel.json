@@ -8,6 +8,10 @@
     {
       "source": "/profiles",
       "destination": "http://14.225.220.28:8182/profiles"
+    },
+    {
+      "source": "/profile",
+      "destination": "http://14.225.220.28:8182/profile"
     }
   ]
 }

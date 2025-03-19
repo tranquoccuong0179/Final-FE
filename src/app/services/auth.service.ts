@@ -58,7 +58,7 @@ export class AuthService {
 
     const headers = { Authorization: `Bearer ${token}` };
 
-    this.http.get<{ data: User }>("/profiles", { headers }).subscribe({
+    this.http.get<{ data: User }>("/profile", { headers }).subscribe({
       next: (response) => {
         console.log(response.data.email);
         this.profileSubject.next(response.data);
