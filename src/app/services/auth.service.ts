@@ -79,7 +79,7 @@ export class AuthService {
   }
 
   login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/login`, request).pipe(
+    return this.http.post<AuthResponse>("/login", request).pipe(
       tap((response) => {
         localStorage.setItem("token", response.data.access_token);
         document.cookie = `token=${response.data.access_token}; path=/`;
