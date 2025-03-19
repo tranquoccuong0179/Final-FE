@@ -74,7 +74,7 @@ export class OrderService {
   paymentOrder(request: PaymentRequestDTO): Observable<string> {
     return this.http
       .post(
-        `http://localhost:8080/api/v1/payment/create?businessKey=${request.businessKey}`,
+        `/api/v1/payment/create?businessKey=${request.businessKey}`,
         {},
         { responseType: "text" }
       )
